@@ -29,6 +29,7 @@ pip-log.txt
 # expanded from .orig
 powerbtn
 _etc_acpi_events_powerbtn
+_etc_sudoers.d_powermyth
 
 # emacs
 \#*\#
