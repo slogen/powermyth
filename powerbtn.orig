@@ -1,12 +1,15 @@
 #!/bin/sh
 
 MYTHWAKE=${MYTHWAKE:-${bin}mythwake}
+POWEROFF=${POWEROFF:-/sbin/poweroff}
 
 ${MYTHWAKE} "$@"
 
 rc=$?
 if test "x$rc" = "x0"; then
   logger -s "$0: Shutting down"
+  ${POWEROFF}
 else
   logger -s  "$0: Staying alive"
+  exit 1
 fi
