@@ -1,2 +1,0 @@
-%mythtv ALL=NOPASSWD: /usr/local/bin/mythwake.py
-%mythtv ALL=NOPASSWD: /sbin/shutdown

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+MYTHWAKE=${MYTHWAKE:-${bin}mythwake}
+
+${MYTHWAKE} "$@"
+
+rc=$?
+if test "x$rc" = "x0"; then
+  logger -s "$0: Shutting down"
+else
+  logger -s  "$0: Staying alive"
+fi

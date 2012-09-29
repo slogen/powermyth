@@ -25,3 +25,11 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+# expanded from .orig
+powerbtn
+_etc_acpi_events_powerbtn
+
+# emacs
+\#*\#
+*~
