@@ -1,2 +1,2 @@
-%mythtv ALL=NOPASSWD: ${bin}mythwake.py
+%mythtv ALL=NOPASSWD: ${bin}mythwake
 %mythtv ALL=NOPASSWD: /sbin/shutdown
