@@ -6,9 +6,15 @@ $ sudo apt-get install acpid
 
 Install powermyth:
 
-$ sudo make install prefix=/
+$ sudo make install prefix=
 
 The prefix=/ is required as a security precaution.
+
+If you are running GNOME (as for example standard ubuntu) then you
+will need to disable the default behaviour of asking the X11 user what
+to do when the power-button is pressed:
+
+$ gsettings set org.gnome.settings-daemon.plugins.power button-power nothing
 
 DESCRIPTION:
 
