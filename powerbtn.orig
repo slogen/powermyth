@@ -1,15 +1,26 @@
 #!/bin/sh
 
+set -x
+
+export HOME=/home/SLOGHOME/hej
+
 MYTHWAKE=${MYTHWAKE:-${bin}mythwake}
-POWEROFF=${POWEROFF:-/sbin/poweroff}
+POWEROFF=${POWEROFF:-/sbin/shutdown -P +1}
 
-${MYTHWAKE} "$@" | logger -s -t MYTHWAKE
-
-rc=$?
-if test "x$rc" = "x0"; then
-  logger -s "$0: Shutting down"
-  ${POWEROFF}
-else
-  logger -s  "$0: Staying alive"
-  exit 1
-fi
+act()  {
+    ${MYTHWAKE} --backend=myth "$@"
+    rc=$?
+    if test "x$rc" = "x0"; then
+	next_alarm="$(</sys/class/rtc/rtc0/wakealarm)"
+	if test "x$next_alarm" = "x"; then
+	    msg="no scheduled poweron"
+	else
+	    msg="re-wake at $(date -d @$next_alarm)"
+	fi
+	${POWEROFF} "$msg"
+    else
+	logger "$0: Staying alive"
+	exit 1
+    fi
+}
+act #2>&1 | logger -s -t "powerbtn"
