@@ -3,7 +3,7 @@
 MYTHWAKE=${MYTHWAKE:-${bin}mythwake}
 POWEROFF=${POWEROFF:-/sbin/poweroff}
 
-${MYTHWAKE} "$@"
+${MYTHWAKE} "$@" | logger -s -t MYTHWAKE
 
 rc=$?
 if test "x$rc" = "x0"; then
