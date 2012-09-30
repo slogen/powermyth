@@ -2,20 +2,27 @@
 
 import sys
 import time
+import codecs
 from datetime import datetime, timedelta
 import MythTV
 
-soon_default = timedelta(seconds = 600)
-date_fmt_default = "%d/%m %H:%M"
+# Insane jumping through hoops to output UTF-8
+UTF8Writer = codecs.getwriter('utf8')
+sys.stdout = UTF8Writer(sys.stdout)
 
-leak=[None]
+soon_default = timedelta(seconds = 600)
+date_fmt_default = u"%d/%m %H:%M"
 
 def recordstate(backend = None):
-    be = backend or MythTV.MythBE()
+    if backend is None:
+        be = MythTV.MythBE()
+    elif isinstance(backend, (str, unicode)):
+        be = MythTV.MythBE(backend = backend)
+    else:
+        be = backend
 
     recording_ids = \
         set(be.getRecorderList()) - set(be.getFreeRecorderList())
-    leak[0] = recording_ids
     
     def safeCurrentRecording(rid):
         try:
@@ -36,17 +43,17 @@ def recordstate(backend = None):
     return (recording, upcoming)
 
 def rtcwake(t):
-    wakealarm = "/sys/class/rtc/rtc0/wakealarm"
+    wakealarm = u"/sys/class/rtc/rtc0/wakealarm"
     # terrible handlng of utc-time, t does not have .tzinfo
     # We assume it is the local time-zone (as we are probably
     # running on the back-end)
-    in_a_min = datetime.now() + timedelta(minutes = 1)
-    if t < in_a_min:
-        t = in_a_min
+    in_a_short_while = datetime.now() + timedelta(minutes = 5)
+    if t < in_a_short_while:
+        t = in_a_short_while
                 
     timestamp = time.mktime(t.timetuple())
 
-    print "timestamp: ", timestamp
+    print u"timestamp: ", timestamp
     with open(wakealarm, "w") as out:
         out.write('0\n')
         out.flush()
@@ -58,13 +65,14 @@ def rtcwake(t):
 def nowake(t):
     pass
 
-def act((recordings, upcoming), soon_limit, setwake = None, date_fmt = None):
+def act((recordings, upcoming), soon_limit, 
+        setwake = None, date_fmt = None):
     if date_fmt is None:
         date_fmt = date_fmt_default
     if recordings:
         print (u"REC {recordings[0][endtime]:" 
                + date_fmt 
-               + "}\n{recordings[0][title]}").format(**locals())
+               + u"}\n{recordings[0][title]}").format(**locals())
         setwake(recordings[0].starttime)
         return 1
     elif upcoming:
@@ -74,14 +82,14 @@ def act((recordings, upcoming), soon_limit, setwake = None, date_fmt = None):
         if setwake:
             setwake(wake)
         soon = nxt_start < datetime.now() + soon_limit
-        cat = soon and "AT " or "NXT"
+        cat = soon and u"AT " or u"NXT"
         print (
-            u"{cat}" + " "
-            + "{upcoming[0].starttime:" + date_fmt +"}\n"
-            + "{upcoming[0].title:s}").format(**locals())
+            u"{cat}" + u" "
+            + u"{upcoming[0].starttime:" + date_fmt + u"}\n"
+            + u"{upcoming[0].title:s}").format(**locals())
         return soon and 2 or 0
     else:
-        print "NO\nSCHEDULE"
+        print u"NO\nSCHEDULE"
         return 0
 
 wake_methods = dict(
@@ -114,9 +122,13 @@ wakemyth exits with values: 0: no recording soon, 1: currently recording, 2: wil
         '--date-format',
         help = 'date format for recordings (default: %(default)s)',
         default = date_fmt_default)
+    parser.add_argument(
+        '--backend',
+        help = 'backend to connect to (default: search)',
+        default = None)
     parsed = parser.parse_args(args)
     soon = timedelta(seconds = float(parsed.soon_seconds))
-    state = recordstate()
+    state = recordstate(backend = parsed.backend)
     date_fmt = parsed.date_format
     return act(state, 
                soon_limit = soon, 
