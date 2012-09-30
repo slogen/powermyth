@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -x
 
@@ -13,7 +13,7 @@ act()  {
     if test "x$rc" = "x0"; then
 	next_alarm="$(</sys/class/rtc/rtc0/wakealarm)"
 	if test "x$next_alarm" = "x"; then
-	    msg="no scheduled poweron"
+	    msg="no scheduled poweron ($nex_talarm)"
 	else
 	    msg="re-wake at $(date -d @$next_alarm)"
 	fi
@@ -23,4 +23,4 @@ act()  {
 	exit 1
     fi
 }
-act #2>&1 | logger -s -t "powerbtn"
+act 2>&1 #| logger -s -t "powerbtn"
